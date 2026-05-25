@@ -273,7 +273,7 @@
               </div>
 
               <!-- 數字指標 -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 flex-grow w-full md:w-auto">
+              <div class="grid grid-cols-2 gap-4 sm:gap-6 flex-grow w-full md:w-auto">
                 <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
                   <span class="text-[10px] text-slate-500 block mb-1">🟢 已到賓客</span>
                   <span class="text-base font-bold text-emerald-400" x-text="`${getStats().present} 人`"></span>
@@ -282,14 +282,7 @@
                   <span class="text-[10px] text-slate-500 block mb-1">🔴 未到賓客</span>
                   <span class="text-base font-bold text-rose-400" x-text="`${getStats().absent} 人`"></span>
                 </div>
-                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
-                  <span class="text-[10px] text-slate-500 block mb-1">🟡 遲到人員</span>
-                  <span class="text-base font-bold text-amber-400" x-text="`${getStats().late} 人`"></span>
-                </div>
-                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
-                  <span class="text-[10px] text-slate-500 block mb-1">🔵 請假賓客</span>
-                  <span class="text-base font-bold text-sky-400" x-text="`${getStats().excused} 人`"></span>
-                </div>
+
               </div>
             </div>
 
@@ -372,7 +365,7 @@
                   </div>
 
                   <!-- 狀態按鈕組 -->
-                  <div class="grid grid-cols-4 gap-2 w-full sm:w-auto">
+                  <div class="grid grid-cols-2 gap-2 w-full sm:w-auto">
                     <button
                       @click="handleStatusChange(student.id, 'present')"
                       class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
@@ -390,24 +383,6 @@
                         : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
                     >
                       未到
-                    </button>
-                    <button
-                      @click="handleStatusChange(student.id, 'late')"
-                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
-                      :class="attendance[student.id] === 'late' 
-                        ? 'bg-amber-950/80 text-amber-300 border-amber-500' 
-                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
-                    >
-                      遲到
-                    </button>
-                    <button
-                      @click="handleStatusChange(student.id, 'excused')"
-                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
-                      :class="attendance[student.id] === 'excused' 
-                        ? 'bg-sky-950/80 text-sky-300 border-sky-500' 
-                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
-                    >
-                      請假
                     </button>
                   </div>
                 </div>
@@ -740,8 +715,6 @@
                     <span>應到: <b class="text-slate-200" x-text="record.total"></b>人</span>
                     <span class="text-emerald-400">已到: <b x-text="record.counts.present"></b></span>
                     <span class="text-rose-400">未到: <b x-text="record.counts.absent"></b></span>
-                    <span class="text-amber-400">遲到: <b x-text="record.counts.late"></b></span>
-                    <span class="text-sky-400">請假: <b x-text="record.counts.excused"></b></span>
                   </div>
                 </div>
 
@@ -816,7 +789,7 @@
 
         <!-- 彈窗快速統計 -->
         <template x-if="selectedHistoryRecord">
-          <div class="p-6 border-b border-slate-800/50 bg-slate-900/20 grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div class="p-6 border-b border-slate-800/50 bg-slate-900/20 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800/60 text-center">
               <span class="text-[10px] text-slate-500 block">賓客人數</span>
               <span class="text-base font-bold text-slate-100" x-text="`${selectedHistoryRecord.total} 人`"></span>
@@ -829,11 +802,7 @@
               <span class="text-[10px] text-rose-500 block">未到</span>
               <span class="text-base font-bold text-rose-400" x-text="`${selectedHistoryRecord.counts.absent}人`"></span>
             </div>
-            <div class="bg-amber-950/30 p-3 rounded-2xl border border-amber-900/40 text-center">
-              <span class="text-[10px] text-amber-500 block">遲到</span>
-              <span class="text-base font-bold text-amber-400" x-text="`${selectedHistoryRecord.counts.late}人`"></span>
-            </div>
-            <div class="col-span-2 sm:col-span-1 bg-sky-950/30 p-3 rounded-2xl border border-sky-900/40 text-center">
+            <div class="bg-sky-950/30 p-3 rounded-2xl border border-sky-900/40 text-center">
               <span class="text-[10px] text-sky-500 block">到齊率</span>
               <span class="text-base font-bold text-sky-400" x-text="`${selectedHistoryRecord.rate}%`"></span>
             </div>
@@ -854,7 +823,7 @@
           </div>
 
           <div class="flex gap-1 overflow-x-auto pb-1 sm:pb-0">
-            <template x-for="status in ['all', 'present', 'absent', 'late', 'excused']">
+            <template x-for="status in ['all', 'present', 'absent']">
               <button
                 @click="detailStatusFilter = status"
                 class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition whitespace-nowrap"
@@ -1104,12 +1073,16 @@
         getStats() {
           const current = this.currentClass;
           if (!current || !Array.isArray(current.students)) {
-            return { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+            return { present: 0, absent: 0, total: 0 };
           }
-          const stats = { present: 0, absent: 0, late: 0, excused: 0 };
+          const stats = { present: 0, absent: 0 };
           current.students.forEach(s => {
             const status = this.attendance[s.id] || 'present';
-            stats[status]++;
+            if (status === 'present' || status === 'absent') {
+              stats[status]++;
+            } else {
+              stats.present++;
+            }
           });
           return { ...stats, total: current.students.length };
         },
@@ -1349,7 +1322,7 @@
             return;
           }
 
-          const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+          const counts = { present: 0, absent: 0 };
           const details = [];
 
           current.students.forEach(s => {
@@ -1480,9 +1453,7 @@
           switch (status) {
             case 'present': return '已到';
             case 'absent': return '未到';
-            case 'late': return '遲到';
-            case 'excused': return '請假';
-            default: return '未標記';
+            default: return '已到';
           }
         },
 
@@ -1490,9 +1461,7 @@
           switch (status) {
             case 'present': return 'bg-emerald-950/80 text-emerald-400 border border-emerald-800';
             case 'absent': return 'bg-rose-950/80 text-rose-400 border border-rose-800';
-            case 'late': return 'bg-amber-950/80 text-amber-400 border border-amber-800';
-            case 'excused': return 'bg-sky-950/80 text-sky-400 border border-sky-800';
-            default: return 'bg-slate-800 text-slate-400';
+            default: return 'bg-emerald-950/80 text-emerald-400 border border-emerald-800';
           }
         },
 
