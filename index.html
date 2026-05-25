@@ -97,6 +97,81 @@
       </div>
     </div>
 
+    <!-- GitHub 雲端同步設定彈窗 -->
+    <div
+      x-show="showGitHubSettings"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+      x-transition
+    >
+      <div class="bg-slate-950 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-up p-6 space-y-5">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            </svg>
+            GitHub 雲端同步
+          </h3>
+          <button @click="showGitHubSettings = false" class="bg-slate-900 hover:bg-slate-800 p-1.5 rounded-xl text-slate-400 hover:text-white transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Repository 擁有者</label>
+            <input type="text" x-model="githubOwner" placeholder="例如: samchen640-ctrl"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition font-sans"
+              :disabled="githubConnected" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">Repository 名稱</label>
+            <input type="text" x-model="githubRepo" placeholder="例如: Gathering-System"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition font-sans"
+              :disabled="githubConnected" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5 font-medium">
+              GitHub Personal Access Token
+              <a href="https://github.com/settings/tokens/new?scopes=repo&description=Gathering-System" target="_blank" class="text-amber-400 hover:text-amber-300 underline ml-1">產生 Token</a>
+            </label>
+            <input type="password" x-model="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition font-sans"
+              :disabled="githubConnected" />
+          </div>
+        </div>
+
+        <template x-if="githubConnected">
+          <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-xl px-4 py-3 flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-xs text-emerald-300">已連線至 <b class="font-bold" x-text="`${githubOwner}/${githubRepo}`"></b></span>
+          </div>
+        </template>
+
+        <div class="flex justify-end gap-2.5 pt-1">
+          <template x-if="githubConnected">
+            <button @click="disconnectGitHub()"
+              class="bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-800/60 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
+              中斷連線
+            </button>
+          </template>
+          <template x-if="!githubConnected">
+            <button @click="connectGitHub()"
+              class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-950/20">
+              連線並同步
+            </button>
+          </template>
+          <button @click="showGitHubSettings = false"
+            class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
+            關閉
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 頂部導航 -->
     <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -155,6 +230,20 @@
             聚餐歷史
           </button>
         </nav>
+
+        <!-- GitHub 雲端同步按鈕 -->
+        <button
+          @click="showGitHubSettings = true"
+          class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
+          :class="githubConnected ? 'bg-emerald-950/40 border-emerald-700/50 text-emerald-400 hover:bg-emerald-900/50' : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300 hover:border-slate-700'"
+          title="GitHub 雲端同步設定"
+        >
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span class="hidden sm:inline" x-text="githubConnected ? '已連線' : '雲端設定'"></span>
+        </button>
 
       </div>
     </header>
@@ -888,6 +977,17 @@
           onConfirm: null
         },
 
+        // GitHub 雲端同步設定
+        githubToken: '',
+        githubOwner: 'samchen640-ctrl',
+        githubRepo: 'Gathering-System',
+        githubPath: 'data.json',
+        githubSha: null,
+        githubConnected: false,
+        showGitHubSettings: false,
+        _githubSaveTimer: null,
+        _githubReady: false,
+
         init() {
           let savedClasses = null;
           try {
@@ -921,6 +1021,18 @@
             this.history = [];
           }
 
+          // 載入 GitHub 設定，若已連線則從雲端拉取最新資料
+          this.loadGitHubConfig();
+          if (this.githubConnected) {
+            this.loadFromGitHub().then(() => {
+              this._githubReady = true;
+            }).catch(() => {
+              this._githubReady = true;
+            });
+          } else {
+            this._githubReady = true;
+          }
+
           if (this.classes.length > 0) {
             this.selectedClassId = this.classes[0].id;
             this.resetAttendance();
@@ -933,6 +1045,7 @@
             } catch (e) {
               console.error(e);
             }
+            this._debouncedGitHubSave();
           });
           this.$watch('history', value => {
             try {
@@ -940,6 +1053,7 @@
             } catch (e) {
               console.error(e);
             }
+            this._debouncedGitHubSave();
           });
           this.$watch('selectedClassId', value => {
             this.resetAttendance();
@@ -1266,6 +1380,7 @@
           }
           this.history.unshift(record);
           this.showToast('聚會登記儲存成功！可隨時在「聚餐歷史」中查詢。');
+          this.saveToGitHub(false);
         },
 
         getFilteredHistory() {
@@ -1377,6 +1492,149 @@
             case 'excused': return 'bg-sky-950/80 text-sky-400 border border-sky-800';
             default: return 'bg-slate-800 text-slate-400';
           }
+        },
+
+        // --- GitHub 雲端同步 ---
+        loadGitHubConfig() {
+          try {
+            const cfg = JSON.parse(localStorage.getItem('github_config'));
+            if (cfg) {
+              this.githubToken = cfg.token || '';
+              this.githubOwner = cfg.owner || 'samchen640-ctrl';
+              this.githubRepo = cfg.repo || 'Gathering-System';
+              this.githubPath = cfg.path || 'data.json';
+              this.githubSha = cfg.sha || null;
+              this.githubConnected = !!cfg.token;
+            }
+          } catch (e) {
+            console.error('GitHub 設定載入失敗:', e);
+          }
+        },
+
+        saveGitHubConfig() {
+          try {
+            localStorage.setItem('github_config', JSON.stringify({
+              token: this.githubToken,
+              owner: this.githubOwner,
+              repo: this.githubRepo,
+              path: this.githubPath,
+              sha: this.githubSha
+            }));
+          } catch (e) {
+            console.error('GitHub 設定儲存失敗:', e);
+          }
+        },
+
+        async loadFromGitHub() {
+          if (!this.githubConnected) return;
+          try {
+            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubPath}`;
+            const res = await fetch(url, {
+              headers: { 'Authorization': `token ${this.githubToken}` }
+            });
+            if (res.status === 404) {
+              console.log('data.json 尚不存在於 GitHub，將使用本地資料首次建立');
+              return;
+            }
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.message || 'GitHub API 錯誤');
+            }
+            const data = await res.json();
+            this.githubSha = data.sha;
+            const content = JSON.parse(atob(data.content));
+            if (content.classes && Array.isArray(content.classes) && content.classes.length > 0) {
+              this.classes = content.classes;
+            }
+            if (content.history && Array.isArray(content.history)) {
+              this.history = content.history;
+            }
+            if (this.classes.length > 0) {
+              this.selectedClassId = this.classes[0].id;
+              this.resetAttendance();
+            }
+            this.showToast('已從 GitHub 載入最新資料');
+          } catch (e) {
+            console.error('GitHub 載入失敗:', e);
+            this.showToast('GitHub 載入失敗，使用本地資料', 'error');
+          }
+        },
+
+        async saveToGitHub(silent = false) {
+          if (!this.githubConnected || !this._githubReady) return;
+          try {
+            const payload = { classes: this.classes, history: this.history };
+            const jsonStr = JSON.stringify(payload, null, 2);
+            const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+
+            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubPath}`;
+            const body = {
+              message: '更新點名系統資料',
+              content: base64
+            };
+            if (this.githubSha) body.sha = this.githubSha;
+
+            const res = await fetch(url, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `token ${this.githubToken}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(body)
+            });
+
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.message || 'GitHub 儲存錯誤');
+            }
+
+            const result = await res.json();
+            this.githubSha = result.content.sha;
+            this.saveGitHubConfig();
+
+            if (!silent) {
+              this.showToast('資料已同步至 GitHub');
+            }
+          } catch (e) {
+            console.error('GitHub 同步失敗:', e);
+            if (!silent) {
+              this.showToast('GitHub 同步失敗: ' + e.message, 'error');
+            }
+          }
+        },
+
+        _debouncedGitHubSave() {
+          if (this._githubSaveTimer) clearTimeout(this._githubSaveTimer);
+          this._githubSaveTimer = setTimeout(() => {
+            this.saveToGitHub(true);
+          }, 2000);
+        },
+
+        async connectGitHub() {
+          if (!this.githubToken.trim()) {
+            this.showToast('請輸入 GitHub Personal Access Token', 'error');
+            return;
+          }
+          if (!this.githubOwner.trim() || !this.githubRepo.trim()) {
+            this.showToast('請輸入 Repository 擁有者與名稱', 'error');
+            return;
+          }
+          this.githubConnected = true;
+          this.saveGitHubConfig();
+          this.showGitHubSettings = false;
+          await this.loadFromGitHub();
+          this._githubReady = true;
+          this.showToast('GitHub 連線成功！');
+        },
+
+        disconnectGitHub() {
+          this.githubConnected = false;
+          this.githubToken = '';
+          this.githubSha = null;
+          this._githubReady = false;
+          localStorage.removeItem('github_config');
+          this.showGitHubSettings = false;
+          this.showToast('已中斷 GitHub 連線');
         }
       };
     }
