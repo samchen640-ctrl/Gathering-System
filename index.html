@@ -6,8 +6,8 @@
   <title>聚餐與活動智慧點名系統</title>
   <!-- Tailwind CSS  CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine.js 核心庫 -->
-  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Alpine.js 核心庫 (已修正：加上 defer 屬性，確保 HTML 與底部的 JS 函數載入完畢後才執行初始化) -->
+  <script src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js" defer></script>
   <!-- SheetJS 核心庫 (用於在瀏覽器端流暢解析 Excel 檔案) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
@@ -39,6 +39,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200">
 
+  <!-- x-cloak 在 Alpine 成功啟動後會自動被移除 -->
   <div x-data="dinnerApp()" x-init="init()" x-cloak class="min-h-screen flex flex-col">
     
     <!-- --- Toast 提示通知 --- -->
@@ -52,7 +53,7 @@
       :class="{
         'bg-emerald-950/90 border-emerald-500/40 text-emerald-200': toast && toast.type === 'success',
         'bg-rose-950/90 border-rose-500/40 text-rose-200': toast && toast.type === 'error',
-        'bg-amber-950/90 border-amber-500/40 text-amber-200': toast && toast.type === 'info'
+        'bg-amber-950/90 border-amber-500/40 text-amber-250': toast && toast.type === 'info'
       }"
     >
       <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -96,6 +97,7 @@
       </div>
     </div>
 
+    <!-- 頂部導航 -->
     <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -115,7 +117,7 @@
         </div>
 
         <!-- 聚餐活動選擇器 -->
-        <template x-if="classes.length > 0">
+        <template x-if="classes && classes.length > 0">
           <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 w-full md:w-auto">
             <span class="text-xs text-slate-400 whitespace-nowrap">當前活動：</span>
             <select
@@ -123,7 +125,7 @@
               class="bg-transparent text-sm font-semibold text-amber-400 focus:outline-none cursor-pointer pr-4 w-full md:w-auto appearance-none font-sans"
             >
               <template x-for="c in classes" :key="c.id">
-                <option :value="c.id" class="bg-slate-900 text-slate-200" x-text="`${c.name} (${c.students.length}人)`"></option>
+                <option :value="c.id" class="bg-slate-900 text-slate-200" x-text="`${c.name} (${c.students ? c.students.length : 0}人)`"></option>
               </template>
             </select>
           </div>
@@ -235,7 +237,7 @@
             
             <button
               @click="handleSaveAttendance()"
-              :disabled="!currentClass || currentClass.students.length === 0"
+              :disabled="!currentClass || !currentClass.students || currentClass.students.length === 0"
               class="bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -246,7 +248,7 @@
           </div>
 
           <!-- 成員列表 -->
-          <template x-if="!currentClass || currentClass.students.length === 0">
+          <template x-if="!currentClass || !currentClass.students || currentClass.students.length === 0">
             <div class="p-16 text-center space-y-4">
               <div class="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto text-slate-500">
                 <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -266,9 +268,9 @@
             </div>
           </template>
 
-          <template x-if="currentClass && currentClass.students.length > 0">
+          <template x-if="currentClass && currentClass.students && currentClass.students.length > 0">
             <div class="divide-y divide-slate-800/60 max-h-[500px] overflow-y-auto">
-              <template x-for="student in currentClass.students" :key="student.id">
+              <template x-for="student in (currentClass ? currentClass.students : [])" :key="student.id">
                 <div 
                   class="px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 hover:bg-slate-900/40 transition"
                   :class="attendance[student.id] === 'absent' ? 'bg-rose-950/5' : ''"
@@ -329,7 +331,7 @@
       </div>
 
       <!-- ================= 2. 名單維護分頁 ================= -->
-      <div x-show="activeTab === 'classes'" class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="display: none;">
+      <div x-show="activeTab === 'classes'" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div class="space-y-6">
           <!-- 建立新聚餐 -->
@@ -377,7 +379,7 @@
                     </svg>
                     <div>
                       <p class="text-sm font-semibold" x-text="c.name"></p>
-                      <p class="text-[10px] text-slate-500" x-text="`${c.students.length} 人參與`"></p>
+                      <p class="text-[10px] text-slate-500" x-text="`${c.students ? c.students.length : 0} 人參與`"></p>
                     </div>
                   </div>
                   <button
@@ -404,10 +406,10 @@
               
               <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
-                  <h2 class="text-lg font-bold text-white" x-text="`${currentClass.name} — 名單管理`"></h2>
+                  <h2 class="text-lg font-bold text-white" x-text="currentClass ? `${currentClass.name} — 名單管理` : ''"></h2>
                   <p class="text-xs text-slate-400">支援手動新增、LINE接龍、或是 Excel 一鍵檔案匯入，系統將全自動編號</p>
                 </div>
-                <span class="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full font-mono" x-text="`共 ${currentClass.students.length} 人`"></span>
+                <span class="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full font-mono" x-text="currentClass ? `共 ${currentClass.students ? currentClass.students.length : 0} 人` : '共 0 人'"></span>
               </div>
 
               <!-- 新增成員表單 (3 欄佈局) -->
@@ -473,7 +475,7 @@
                   <div>
                     <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
                       <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                       </svg>
                       方法三：匯入 Excel 檔案
                     </h4>
@@ -502,14 +504,14 @@
               <!-- 賓客名單 -->
               <div>
                 <h3 class="text-sm font-bold text-slate-300 mb-3">賓客名單</h3>
-                <template x-if="currentClass.students.length === 0">
+                <template x-if="!currentClass || !currentClass.students || currentClass.students.length === 0">
                   <div class="p-8 text-center border border-dashed border-slate-800 rounded-2xl">
                     <p class="text-xs text-slate-500">此活動尚未添加任何人員，快在上方新增吧！</p>
                   </div>
                 </template>
-                <template x-if="currentClass.students.length > 0">
+                <template x-if="currentClass && currentClass.students && currentClass.students.length > 0">
                   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                    <template x-for="student in currentClass.students" :key="student.id">
+                    <template x-for="student in (currentClass ? currentClass.students : [])" :key="student.id">
                       <div class="bg-slate-900/60 border border-slate-800 px-3 py-2.5 rounded-xl flex items-center justify-between transition">
                         <div class="flex items-center gap-2 overflow-hidden">
                           <!-- 永遠維持完美排序的動態序號 -->
@@ -545,7 +547,7 @@
       </div>
 
       <!-- ================= 3. 聚餐歷史分頁 ================= -->
-      <div x-show="activeTab === 'history'" class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6" style="display: none;">
+      <div x-show="activeTab === 'history'" class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
         
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
           <div>
@@ -553,7 +555,7 @@
             <p class="text-xs text-slate-400">輕鬆過濾、查詢或匯出以往聚會出勤統計</p>
           </div>
           
-          <template x-if="history.length > 0">
+          <template x-if="history && history.length > 0">
             <button
               @click="confirmClearAllHistory()"
               class="bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-800/80 text-xs px-4 py-2.5 rounded-xl transition font-semibold"
@@ -564,7 +566,7 @@
         </div>
 
         <!-- 智慧搜尋面板 -->
-        <template x-if="history.length > 0">
+        <template x-if="history && history.length > 0">
           <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
             
             <!-- 活動名稱/日期 -->
@@ -613,7 +615,7 @@
         </template>
 
         <!-- 歷史紀錄列表 -->
-        <template x-if="history.length === 0">
+        <template x-if="!history || history.length === 0">
           <div class="p-20 text-center space-y-4">
             <div class="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto text-slate-500">
               <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -627,13 +629,13 @@
           </div>
         </template>
 
-        <template x-if="history.length > 0 && getFilteredHistory().length === 0">
+        <template x-if="history && history.length > 0 && getFilteredHistory().length === 0">
           <div class="p-12 text-center border border-dashed border-slate-800 rounded-2xl text-slate-400">
             查無符合篩選條件的聚會。
           </div>
         </template>
 
-        <template x-if="history.length > 0 && getFilteredHistory().length > 0">
+        <template x-if="history && history.length > 0 && getFilteredHistory().length > 0">
           <div class="space-y-4">
             <template x-for="record in getFilteredHistory()" :key="record.id">
               <div 
@@ -697,7 +699,6 @@
       x-show="selectedHistoryRecord" 
       class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       x-transition
-      style="display: none;"
     >
       <div 
         class="bg-slate-950 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-scale-up"
@@ -888,11 +889,37 @@
         },
 
         init() {
-          const savedClasses = localStorage.getItem('rollcall_classes');
-          this.classes = savedClasses ? JSON.parse(savedClasses) : DEFAULT_CLASSES;
+          let savedClasses = null;
+          try {
+            savedClasses = localStorage.getItem('rollcall_classes');
+          } catch (e) {
+            console.error('LocalStorage 存取受限:', e);
+          }
 
-          const savedHistory = localStorage.getItem('rollcall_history');
-          this.history = savedHistory ? JSON.parse(savedHistory) : [];
+          try {
+            this.classes = savedClasses ? JSON.parse(savedClasses) : DEFAULT_CLASSES;
+            if (!Array.isArray(this.classes) || this.classes.length === 0) {
+              this.classes = DEFAULT_CLASSES;
+            }
+          } catch (e) {
+            this.classes = DEFAULT_CLASSES;
+          }
+
+          let savedHistory = null;
+          try {
+            savedHistory = localStorage.getItem('rollcall_history');
+          } catch (e) {
+            console.error(e);
+          }
+
+          try {
+            this.history = savedHistory ? JSON.parse(savedHistory) : [];
+            if (!Array.isArray(this.history)) {
+              this.history = [];
+            }
+          } catch (e) {
+            this.history = [];
+          }
 
           if (this.classes.length > 0) {
             this.selectedClassId = this.classes[0].id;
@@ -901,10 +928,18 @@
 
           // 深度狀態監聽與儲存
           this.$watch('classes', value => {
-            localStorage.setItem('rollcall_classes', JSON.stringify(value));
+            try {
+              localStorage.setItem('rollcall_classes', JSON.stringify(value));
+            } catch (e) {
+              console.error(e);
+            }
           });
           this.$watch('history', value => {
-            localStorage.setItem('rollcall_history', JSON.stringify(value));
+            try {
+              localStorage.setItem('rollcall_history', JSON.stringify(value));
+            } catch (e) {
+              console.error(e);
+            }
           });
           this.$watch('selectedClassId', value => {
             this.resetAttendance();
@@ -912,13 +947,14 @@
         },
 
         get currentClass() {
-          return this.classes.find(c => c.id === this.selectedClassId);
+          if (!Array.isArray(this.classes)) return null;
+          return this.classes.find(c => c.id === this.selectedClassId) || null;
         },
 
         // --- 重算編號核心演算法 ( Resequencing ) ---
         resequenceStudents() {
           const current = this.currentClass;
-          if (!current) return;
+          if (!current || !Array.isArray(current.students)) return;
           current.students.forEach((s, i) => {
             s.number = (i + 1).toString().padStart(2, '0');
           });
@@ -928,7 +964,7 @@
 
         resetAttendance() {
           const current = this.currentClass;
-          if (!current) return;
+          if (!current || !Array.isArray(current.students)) return;
           const initial = {};
           current.students.forEach(s => {
             initial[s.id] = 'present'; // 聚餐預設全部已到
@@ -942,7 +978,7 @@
 
         setAllStatus(status) {
           const current = this.currentClass;
-          if (!current) return;
+          if (!current || !Array.isArray(current.students)) return;
           current.students.forEach(s => {
             this.attendance[s.id] = status;
           });
@@ -951,7 +987,9 @@
 
         getStats() {
           const current = this.currentClass;
-          if (!current) return { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+          if (!current || !Array.isArray(current.students)) {
+            return { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+          }
           const stats = { present: 0, absent: 0, late: 0, excused: 0 };
           current.students.forEach(s => {
             const status = this.attendance[s.id] || 'present';
@@ -996,6 +1034,9 @@
           if (!this.newStudentName.trim() || !this.selectedClassId) return;
           const current = this.currentClass;
           if (!current) return;
+          if (!Array.isArray(current.students)) {
+            current.students = [];
+          }
 
           current.students.push({
             id: `student-${Date.now()}`,
@@ -1020,11 +1061,11 @@
             let name = line.trim();
             if (!name) return;
 
-            // 智慧消除行首數字、點或標點 (如 "1. Jerry" 或 "2、王小明")
+            // 智慧消除行首數字、點 or 標點 (如 "1. Jerry" 或 "2、王小明")
             name = name.replace(/^\d+[\.\:\,、\s\-]+/g, '');
 
             // 智慧消除常用的接龍廢字 (如 "王大同 +1", "Emily 已繳費")
-            name = name.replace(/[\+\+1\s]+1/g, '')
+            name = name.replace(/[\+\s]?\+1/g, '')
                        .replace(/[\(（]已.*[\)）]/g, '')
                        .replace(/已繳[費錢]?/g, '')
                        .replace(/[\+\s]/g, '');
@@ -1042,6 +1083,9 @@
 
           const current = this.currentClass;
           if (current) {
+            if (!Array.isArray(current.students)) {
+              current.students = [];
+            }
             const newStudents = finalNames.map((name, index) => ({
               id: `student-${Date.now()}-${index}`,
               name,
@@ -1145,6 +1189,9 @@
               // 4. 新增至現有成員，並觸發動態重新編號與 UI 刷新
               const current = this.currentClass;
               if (current) {
+                if (!Array.isArray(current.students)) {
+                  current.students = [];
+                }
                 const newStudents = finalNames.map((name, index) => ({
                   id: `student-${Date.now()}-${index}`,
                   name,
@@ -1170,7 +1217,7 @@
 
         handleDeleteStudent(studentId) {
           const current = this.currentClass;
-          if (current) {
+          if (current && Array.isArray(current.students)) {
             current.students = current.students.filter(s => s.id !== studentId);
             this.resequenceStudents(); // 智慧重新計算所有成員編號，保證排序整齊無漏號
             this.resetAttendance();
@@ -1181,7 +1228,7 @@
         // --- 點名結果儲存與跨頁查詢 ---
         handleSaveAttendance() {
           const current = this.currentClass;
-          if (!current || current.students.length === 0) {
+          if (!current || !Array.isArray(current.students) || current.students.length === 0) {
             this.showToast('此活動沒有成員，無法儲存結果！', 'error');
             return;
           }
@@ -1214,17 +1261,21 @@
             details
           };
 
+          if (!Array.isArray(this.history)) {
+            this.history = [];
+          }
           this.history.unshift(record);
           this.showToast('聚會登記儲存成功！可隨時在「聚餐歷史」中查詢。');
         },
 
         getFilteredHistory() {
+          if (!Array.isArray(this.history)) return [];
           return this.history.filter(record => {
-            const matchesGeneral = record.className.toLowerCase().includes(this.historySearchTerm.toLowerCase()) ||
-                                   record.date.toLowerCase().includes(this.historySearchTerm.toLowerCase());
+            const matchesGeneral = (record.className || '').toLowerCase().includes(this.historySearchTerm.toLowerCase()) ||
+                                   (record.date || '').toLowerCase().includes(this.historySearchTerm.toLowerCase());
             
-            const matchesStudent = this.historyStudentSearch.trim() === '' ? true : record.details.some(d => 
-              d.name.toLowerCase().includes(this.historyStudentSearch.toLowerCase())
+            const matchesStudent = this.historyStudentSearch.trim() === '' ? true : (record.details || []).some(d => 
+              (d.name || '').toLowerCase().includes(this.historyStudentSearch.toLowerCase())
             );
 
             return matchesGeneral && matchesStudent;
@@ -1232,10 +1283,10 @@
         },
 
         getFilteredDetailStudents() {
-          if (!this.selectedHistoryRecord) return [];
+          if (!this.selectedHistoryRecord || !Array.isArray(this.selectedHistoryRecord.details)) return [];
           return this.selectedHistoryRecord.details.filter(item => {
-            const matchesSearch = item.name.toLowerCase().includes(this.detailSearchTerm.toLowerCase()) || 
-                                  item.number.includes(this.detailSearchTerm);
+            const matchesSearch = (item.name || '').toLowerCase().includes(this.detailSearchTerm.toLowerCase()) || 
+                                  (item.number || '').includes(this.detailSearchTerm);
             const matchesStatus = this.detailStatusFilter === 'all' ? true : item.status === this.detailStatusFilter;
             return matchesSearch && matchesStatus;
           });
@@ -1272,6 +1323,7 @@
         },
 
         exportToCSV(record) {
+          if (!record || !Array.isArray(record.details)) return;
           let csvContent = "\uFEFF"; // UTF-8 BOM, 關鍵：保證 Windows Excel 打開中文時絕不亂碼
           csvContent += `聚會活動,${record.className}\n`;
           csvContent += `記錄時間,${record.date}\n`;
