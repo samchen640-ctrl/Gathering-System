@@ -1026,6 +1026,8 @@
           if (this.githubConnected) {
             this.loadFromGitHub().then(() => {
               this._githubReady = true;
+              // 連線後自動將本地資料同步至 GitHub（建立 data.json）
+              this._debouncedGitHubSave();
             }).catch(() => {
               this._githubReady = true;
             });
@@ -1560,12 +1562,31 @@
           }
         },
 
+        async getGitHubSha() {
+          try {
+            const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubPath}`;
+            const res = await fetch(url, {
+              headers: { 'Authorization': `token ${this.githubToken}` }
+            });
+            if (res.status === 404) return null;
+            if (!res.ok) return null;
+            const data = await res.json();
+            return data.sha;
+          } catch (e) {
+            return null;
+          }
+        },
+
         async saveToGitHub(silent = false) {
           if (!this.githubConnected || !this._githubReady) return;
           try {
             const payload = { classes: this.classes, history: this.history };
             const jsonStr = JSON.stringify(payload, null, 2);
             const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
+
+            // 每次儲存前自動取得最新 sha，避免同步衝突
+            const latestSha = await this.getGitHubSha();
+            this.githubSha = latestSha;
 
             const url = `https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/contents/${this.githubPath}`;
             const body = {
@@ -1624,6 +1645,7 @@
           this.showGitHubSettings = false;
           await this.loadFromGitHub();
           this._githubReady = true;
+          this._debouncedGitHubSave();
           this.showToast('GitHub 連線成功！');
         },
 
