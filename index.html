@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聚餐與活動智慧點名系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    /* 精美滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* 漸變與彈窗動畫 */
+    @keyframes scaleUp {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-up {
+      animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200">
+
+  <div x-data="dinnerApp()" x-init="init()" x-cloak class="min-h-screen flex flex-col">
+    
+    <!-- --- Toast 提示通知 --- -->
+    <div 
+      x-show="toast" 
+      x-transition:enter="transition ease-out duration-300 transform translate-y-4 opacity-0"
+      x-transition:enter-start="translate-y-4 opacity-0"
+      x-transition:enter-end="translate-y-0 opacity-100"
+      x-transition:leave="transition ease-in duration-200 transform translate-y-2 opacity-0"
+      class="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3.5 rounded-2xl shadow-2xl border transition-all duration-300"
+      :class="{
+        'bg-emerald-950/90 border-emerald-500/40 text-emerald-200': toast && toast.type === 'success',
+        'bg-rose-950/90 border-rose-500/40 text-rose-200': toast && toast.type === 'error',
+        'bg-amber-950/90 border-amber-500/40 text-amber-200': toast && toast.type === 'info'
+      }"
+    >
+      <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="font-medium text-sm" x-text="toast ? toast.message : ''"></span>
+    </div>
+
+    <div 
+      x-show="confirmModal.show" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
+      x-transition
+    >
+      <div class="bg-slate-950 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-up p-6 space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="bg-amber-950 text-amber-400 p-2 rounded-xl border border-amber-800/40 shrink-0">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-base font-bold text-white" x-text="confirmModal.title">確認操作</h4>
+            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed" x-text="confirmModal.message"></p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2.5 pt-2">
+          <button 
+            @click="confirmModal.show = false" 
+            class="bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 transition"
+          >
+            取消
+          </button>
+          <button 
+            @click="triggerConfirmAction()" 
+            class="bg-amber-600 hover:bg-amber-500 text-slate-900 text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-950/20"
+          >
+            確定執行
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-2.5 rounded-2xl shadow-lg shadow-amber-500/10 flex items-center justify-center">
+            <!-- 聚餐乾杯 SVG -->
+            <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
+              聚餐與活動智慧點名系統
+            </h1>
+            <p class="text-xs text-slate-400">專為派對、春酒、同學會設計的報到與互動神器</p>
+          </div>
+        </div>
+
+        <!-- 聚餐活動選擇器 -->
+        <template x-if="classes.length > 0">
+          <div class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 w-full md:w-auto">
+            <span class="text-xs text-slate-400 whitespace-nowrap">當前活動：</span>
+            <select
+              x-model="selectedClassId"
+              class="bg-transparent text-sm font-semibold text-amber-400 focus:outline-none cursor-pointer pr-4 w-full md:w-auto appearance-none font-sans"
+            >
+              <template x-for="c in classes" :key="c.id">
+                <option :value="c.id" class="bg-slate-900 text-slate-200" x-text="`${c.name} (${c.students.length}人)`"></option>
+              </template>
+            </select>
+          </div>
+        </template>
+
+        <!-- 分頁切換 -->
+        <nav class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <button
+            @click="activeTab = 'rollcall'"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all"
+            :class="activeTab === 'rollcall' ? 'bg-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+          >
+            報到登記
+          </button>
+          <button
+            @click="activeTab = 'classes'"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all"
+            :class="activeTab === 'classes' ? 'bg-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+          >
+            名單維護
+          </button>
+          <button
+            @click="activeTab = 'history'"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all"
+            :class="activeTab === 'history' ? 'bg-amber-600 text-slate-950 font-bold shadow-md shadow-amber-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'"
+          >
+            聚餐歷史
+          </button>
+        </nav>
+
+      </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
+
+      <!-- ================= 1. 報到登記分頁 ================= -->
+      <div x-show="activeTab === 'rollcall'" class="space-y-6">
+        
+        <!-- 出席率統計與快速操作滿版面板 -->
+        <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            
+            <div class="flex flex-col md:flex-row items-center gap-6 flex-grow">
+              <!-- 圓形出席率 -->
+              <div class="relative flex items-center justify-center shrink-0">
+                <svg class="w-24 h-24 transform -rotate-90">
+                  <circle cx="48" cy="48" r="40" stroke="#1e293b" stroke-width="8" fill="transparent" />
+                  <circle cx="48" cy="48" r="40" stroke="#d97706" stroke-width="8" fill="transparent"
+                    :stroke-dasharray="2 * Math.PI * 40"
+                    :stroke-dashoffset="2 * Math.PI * 40 * (1 - (getStats().total > 0 ? (getStats().present / getStats().total) : 0))"
+                    class="transition-all duration-500 ease-out"
+                  />
+                </svg>
+                <span class="absolute text-xl font-extrabold text-white" x-text="`${getStats().total > 0 ? Math.round((getStats().present / getStats().total) * 100) : 0}%`"></span>
+              </div>
+
+              <!-- 數字指標 -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 flex-grow w-full md:w-auto">
+                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
+                  <span class="text-[10px] text-slate-500 block mb-1">🟢 已到賓客</span>
+                  <span class="text-base font-bold text-emerald-400" x-text="`${getStats().present} 人`"></span>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
+                  <span class="text-[10px] text-slate-500 block mb-1">🔴 未到賓客</span>
+                  <span class="text-base font-bold text-rose-400" x-text="`${getStats().absent} 人`"></span>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
+                  <span class="text-[10px] text-slate-500 block mb-1">🟡 遲到人員</span>
+                  <span class="text-base font-bold text-amber-400" x-text="`${getStats().late} 人`"></span>
+                </div>
+                <div class="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/40 text-center">
+                  <span class="text-[10px] text-slate-500 block mb-1">🔵 請假賓客</span>
+                  <span class="text-base font-bold text-sky-400" x-text="`${getStats().excused} 人`"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 快速操作區 -->
+            <div class="flex sm:flex-row lg:flex-col gap-3 shrink-0 w-full lg:w-auto border-t lg:border-t-0 lg:border-l border-slate-800/60 pt-4 lg:pt-0 lg:pl-6">
+              <button 
+                @click="setAllStatus('present')"
+                class="flex-1 lg:w-40 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs py-3 px-4 rounded-xl transition font-semibold text-slate-200"
+              >
+                全員出席登記
+              </button>
+              <button 
+                @click="resetAttendance()"
+                class="flex-1 lg:w-40 bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-xs py-3 px-4 rounded-xl transition font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5"
+                title="重設今日登記"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18" />
+                </svg>
+                重設報到狀態
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+          
+          <div class="px-6 py-5 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-white">報到名冊</h2>
+              <p class="text-xs text-slate-400">點擊按鈕直接切換報到狀態</p>
+            </div>
+            
+            <button
+              @click="handleSaveAttendance()"
+              :disabled="!currentClass || currentClass.students.length === 0"
+              class="bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              儲存本次聚餐報到結果
+            </button>
+          </div>
+
+          <!-- 成員列表 -->
+          <template x-if="!currentClass || currentClass.students.length === 0">
+            <div class="p-16 text-center space-y-4">
+              <div class="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto text-slate-500">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-slate-300 font-medium">名單空空如也！</h4>
+                <p class="text-xs text-slate-500 mt-1">請切換至「名單維護」分頁新增成員或批次匯入中英文名字。</p>
+              </div>
+              <button
+                @click="activeTab = 'classes'"
+                class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs px-4 py-2 rounded-lg transition"
+              >
+                前往新增名單
+              </button>
+            </div>
+          </template>
+
+          <template x-if="currentClass && currentClass.students.length > 0">
+            <div class="divide-y divide-slate-800/60 max-h-[500px] overflow-y-auto">
+              <template x-for="student in currentClass.students" :key="student.id">
+                <div 
+                  class="px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 hover:bg-slate-900/40 transition"
+                  :class="attendance[student.id] === 'absent' ? 'bg-rose-950/5' : ''"
+                >
+                  <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <span class="text-xs font-mono bg-slate-800 text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg" x-text="student.number"></span>
+                    <div>
+                      <!-- 支援繁中、英文姓名正常渲染 -->
+                      <span class="font-semibold text-white text-base tracking-wide" x-text="student.name"></span>
+                    </div>
+                  </div>
+
+                  <!-- 狀態按鈕組 -->
+                  <div class="grid grid-cols-4 gap-2 w-full sm:w-auto">
+                    <button
+                      @click="handleStatusChange(student.id, 'present')"
+                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
+                      :class="attendance[student.id] === 'present' 
+                        ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500' 
+                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
+                    >
+                      已到
+                    </button>
+                    <button
+                      @click="handleStatusChange(student.id, 'absent')"
+                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
+                      :class="attendance[student.id] === 'absent' 
+                        ? 'bg-rose-950/80 text-rose-300 border-rose-500' 
+                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
+                    >
+                      未到
+                    </button>
+                    <button
+                      @click="handleStatusChange(student.id, 'late')"
+                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
+                      :class="attendance[student.id] === 'late' 
+                        ? 'bg-amber-950/80 text-amber-300 border-amber-500' 
+                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
+                    >
+                      遲到
+                    </button>
+                    <button
+                      @click="handleStatusChange(student.id, 'excused')"
+                      class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition border"
+                      :class="attendance[student.id] === 'excused' 
+                        ? 'bg-sky-950/80 text-sky-300 border-sky-500' 
+                        : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
+                    >
+                      請假
+                    </button>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+        </div>
+
+      </div>
+
+      <!-- ================= 2. 名單維護分頁 ================= -->
+      <div x-show="activeTab === 'classes'" class="grid grid-cols-1 lg:grid-cols-3 gap-6" style="display: none;">
+        
+        <div class="space-y-6">
+          <!-- 建立新聚餐 -->
+          <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <svg class="w-4.5 h-4.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              建立新聚餐活動
+            </h3>
+            <form @submit.prevent="handleCreateClass()" class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1.5 font-medium">聚餐 / 活動名稱</label>
+                <input
+                  type="text"
+                  placeholder="例如: 2026公司尾牙、老友叙舊"
+                  x-model="newClassName"
+                  class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition"
+                />
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 text-sm font-bold py-2.5 rounded-xl transition"
+              >
+                建立聚餐
+              </button>
+            </form>
+          </div>
+
+          <!-- 現有聚餐清單 -->
+          <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <h3 class="text-base font-bold text-white mb-3">現有聚會清單</h3>
+            <div class="space-y-2">
+              <template x-for="c in classes" :key="c.id">
+                <div 
+                  class="flex items-center justify-between p-3 rounded-xl border transition cursor-pointer"
+                  :class="c.id === selectedClassId 
+                    ? 'bg-amber-950/30 border-amber-500 text-amber-300' 
+                    : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'"
+                  @click="selectedClassId = c.id"
+                >
+                  <div class="flex items-center gap-3">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <div>
+                      <p class="text-sm font-semibold" x-text="c.name"></p>
+                      <p class="text-[10px] text-slate-500" x-text="`${c.students.length} 人參與`"></p>
+                    </div>
+                  </div>
+                  <button
+                    @click.stop="confirmDeleteClass(c.id)"
+                    class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800/80 transition"
+                    title="刪除此活動"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 成員名冊維護 -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <template x-if="currentClass">
+            <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl">
+              
+              <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                  <h2 class="text-lg font-bold text-white" x-text="`${currentClass.name} — 名單管理`"></h2>
+                  <p class="text-xs text-slate-400">支援快速登入或批次導入中、英文名字</p>
+                </div>
+                <span class="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full font-mono" x-text="`共 ${currentClass.students.length} 人`"></span>
+              </div>
+
+              <!-- 新增成員表單 -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                
+                <!-- 手動單筆登入 -->
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+                  <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    方法一：手動新增成員
+                  </h4>
+                  <form @submit.prevent="handleAddStudent()" class="space-y-3">
+                    <div class="grid grid-cols-3 gap-2">
+                      <div class="col-span-1">
+                        <input
+                          type="text"
+                          placeholder="編號"
+                          x-model="newStudentNumber"
+                          class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
+                      <div class="col-span-2">
+                        <input
+                          type="text"
+                          placeholder="王大明 / Jerry Wang"
+                          x-model="newStudentName"
+                          class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      class="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-semibold py-2 rounded-lg transition"
+                    >
+                      加入此活動
+                    </button>
+                  </form>
+                </div>
+
+                <!-- LINE 接龍一鍵批次智慧匯入 -->
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
+                  <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    方法二：LINE接龍名單直接貼上 (智能過濾雜訊)
+                  </h4>
+                  <div class="space-y-2">
+                    <textarea
+                      rows="2"
+                      placeholder="例：1. Jerry Wang, 2. 陳小明 +1, 3. Alex (已交錢)"
+                      x-model="bulkInput"
+                      class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500 resize-none font-sans"
+                    ></textarea>
+                    <button
+                      @click="handleBulkImport()"
+                      class="w-full bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 text-xs font-semibold py-1.5 rounded-lg transition"
+                    >
+                      智能批次匯入名冊
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- 賓客名單 -->
+              <div>
+                <h3 class="text-sm font-bold text-slate-300 mb-3">賓客名單</h3>
+                <template x-if="currentClass.students.length === 0">
+                  <div class="p-8 text-center border border-dashed border-slate-800 rounded-2xl">
+                    <p class="text-xs text-slate-500">此活動尚未添加任何人員，快在上方新增吧！</p>
+                  </div>
+                </template>
+                <template x-if="currentClass.students.length > 0">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    <template x-for="student in currentClass.students" :key="student.id">
+                      <div class="bg-slate-900/60 border border-slate-800 px-3 py-2.5 rounded-xl flex items-center justify-between transition">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                          <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded shrink-0" x-text="student.number"></span>
+                          <span class="text-sm font-semibold text-slate-200 truncate" x-text="student.name"></span>
+                        </div>
+                        <button
+                          @click="handleDeleteStudent(student.id)"
+                          class="text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-slate-800 shrink-0 transition"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+
+            </div>
+          </template>
+
+          <template x-if="!currentClass">
+            <div class="bg-slate-950 border border-slate-800 rounded-3xl p-16 text-center text-slate-500">
+              請先在左側建立或選取一個聚餐活動
+            </div>
+          </template>
+
+        </div>
+
+      </div>
+
+      <!-- ================= 3. 聚餐歷史分頁 ================= -->
+      <div x-show="activeTab === 'history'" class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6" style="display: none;">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-5">
+          <div>
+            <h2 class="text-lg font-bold text-white">聚餐紀錄大本營</h2>
+            <p class="text-xs text-slate-400">輕鬆過濾、查詢或匯出以往聚會出勤統計</p>
+          </div>
+          
+          <template x-if="history.length > 0">
+            <button
+              @click="confirmClearAllHistory()"
+              class="bg-rose-950/40 hover:bg-rose-950/60 text-rose-300 border border-rose-800/80 text-xs px-4 py-2.5 rounded-xl transition font-semibold"
+            >
+              清除所有歷史
+            </button>
+          </template>
+        </div>
+
+        <!-- 智慧搜尋面板 -->
+        <template x-if="history.length > 0">
+          <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- 活動名稱/日期 -->
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5 font-medium flex items-center gap-1">
+                <svg class="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                搜尋聚會名稱或日期
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  placeholder="輸入關鍵字 (如：春酒、2026/05)"
+                  x-model="historySearchTerm"
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition font-sans"
+                />
+                <svg class="w-4 h-4 text-slate-500 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- 特定賓客追蹤 -->
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5 font-medium flex items-center gap-1">
+                <svg class="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                追蹤特定成員出席
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  placeholder="輸入中英文姓名 (如：Jerry)"
+                  x-model="historyStudentSearch"
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition font-sans"
+                />
+                <svg class="w-4 h-4 text-slate-500 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+            </div>
+
+          </div>
+        </template>
+
+        <!-- 歷史紀錄列表 -->
+        <template x-if="history.length === 0">
+          <div class="p-20 text-center space-y-4">
+            <div class="bg-slate-900 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto text-slate-500">
+              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-slate-300 font-medium">尚未有儲存的聚會紀錄</h4>
+              <p class="text-xs text-slate-500 mt-1">請在「報到登記」確認結果後，點選儲存，紀錄便會顯示於此。</p>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="history.length > 0 && getFilteredHistory().length === 0">
+          <div class="p-12 text-center border border-dashed border-slate-800 rounded-2xl text-slate-400">
+            查無符合篩選條件的聚會。
+          </div>
+        </template>
+
+        <template x-if="history.length > 0 && getFilteredHistory().length > 0">
+          <div class="space-y-4">
+            <template x-for="record in getFilteredHistory()" :key="record.id">
+              <div 
+                class="bg-slate-900/30 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-5 transition flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer"
+                @click="openHistoryDetails(record)"
+              >
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="bg-amber-950 border border-amber-800 text-amber-300 text-[10px] px-2.5 py-0.5 rounded-full font-bold" x-text="record.className"></span>
+                    <span class="text-xs text-slate-500" x-text="record.date"></span>
+                  </div>
+                  <div class="flex gap-4 text-xs text-slate-400 mt-2">
+                    <span>應到: <b class="text-slate-200" x-text="record.total"></b>人</span>
+                    <span class="text-emerald-400">已到: <b x-text="record.counts.present"></b></span>
+                    <span class="text-rose-400">未到: <b x-text="record.counts.absent"></b></span>
+                    <span class="text-amber-400">遲到: <b x-text="record.counts.late"></b></span>
+                    <span class="text-sky-400">請假: <b x-text="record.counts.excused"></b></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-4 justify-between md:justify-end border-t border-slate-800/60 md:border-0 pt-3 md:pt-0" @click.stop>
+                  <div class="text-right">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">出席率</p>
+                    <p class="text-xl font-black text-amber-400" x-text="`${record.rate}%`"></p>
+                  </div>
+
+                  <div class="flex gap-2">
+                    <button
+                      @click="openHistoryDetails(record)"
+                      class="bg-amber-950/80 hover:bg-amber-900 border border-amber-500/30 text-amber-300 text-xs font-bold py-2 px-3 rounded-xl transition flex items-center gap-1.5"
+                    >
+                      檢視
+                    </button>
+                    <button
+                      @click="exportToCSV(record)"
+                      class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-2 px-3 rounded-xl transition flex items-center gap-1.5"
+                    >
+                      匯出
+                    </button>
+                    <button
+                      @click="confirmDeleteHistory(record.id)"
+                      class="bg-slate-900 hover:bg-rose-950/50 text-slate-500 hover:text-rose-400 p-2.5 rounded-xl transition"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </template>
+          </div>
+        </template>
+      </div>
+
+    </main>
+
+    <!-- --- 詳情互動檢視彈窗 --- -->
+    <div 
+      x-show="selectedHistoryRecord" 
+      class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      x-transition
+      style="display: none;"
+    >
+      <div 
+        class="bg-slate-950 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-scale-up"
+        @click.away="selectedHistoryRecord = null"
+      >
+        <!-- 彈窗頭部 -->
+        <div class="p-6 border-b border-slate-800/80 flex justify-between items-start gap-4">
+          <template x-if="selectedHistoryRecord">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider bg-amber-950 text-amber-300 border border-amber-800 rounded px-2.5 py-0.5 font-bold">
+                聚會報到名單詳細存檔
+              </span>
+              <h3 class="text-lg font-bold text-white mt-1" x-text="selectedHistoryRecord.className"></h3>
+              <p class="text-xs text-slate-500 mt-0.5" x-text="`紀錄時間：${selectedHistoryRecord.date}`"></p>
+            </div>
+          </template>
+          <button
+            @click="selectedHistoryRecord = null"
+            class="bg-slate-900 hover:bg-slate-800 p-1.5 rounded-xl text-slate-400 hover:text-white transition"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 彈窗快速統計 -->
+        <template x-if="selectedHistoryRecord">
+          <div class="p-6 border-b border-slate-800/50 bg-slate-900/20 grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800/60 text-center">
+              <span class="text-[10px] text-slate-500 block">賓客人數</span>
+              <span class="text-base font-bold text-slate-100" x-text="`${selectedHistoryRecord.total} 人`"></span>
+            </div>
+            <div class="bg-emerald-950/30 p-3 rounded-2xl border border-emerald-900/40 text-center">
+              <span class="text-[10px] text-emerald-500 block">已到</span>
+              <span class="text-base font-bold text-emerald-400" x-text="`${selectedHistoryRecord.counts.present}人`"></span>
+            </div>
+            <div class="bg-rose-950/30 p-3 rounded-2xl border border-rose-900/40 text-center">
+              <span class="text-[10px] text-rose-500 block">未到</span>
+              <span class="text-base font-bold text-rose-400" x-text="`${selectedHistoryRecord.counts.absent}人`"></span>
+            </div>
+            <div class="bg-amber-950/30 p-3 rounded-2xl border border-amber-900/40 text-center">
+              <span class="text-[10px] text-amber-500 block">遲到</span>
+              <span class="text-base font-bold text-amber-400" x-text="`${selectedHistoryRecord.counts.late}人`"></span>
+            </div>
+            <div class="col-span-2 sm:col-span-1 bg-sky-950/30 p-3 rounded-2xl border border-sky-900/40 text-center">
+              <span class="text-[10px] text-sky-500 block">到齊率</span>
+              <span class="text-base font-bold text-sky-400" x-text="`${selectedHistoryRecord.rate}%`"></span>
+            </div>
+          </div>
+        </template>
+
+        <div class="p-4 border-b border-slate-800 bg-slate-950 flex flex-col sm:flex-row gap-3">
+          <div class="relative flex-grow">
+            <input
+              type="text"
+              placeholder="快速篩選此聚會的名單 (支援中、英文姓名)..."
+              x-model="detailSearchTerm"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-sans"
+            />
+            <svg class="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+
+          <div class="flex gap-1 overflow-x-auto pb-1 sm:pb-0">
+            <template x-for="status in ['all', 'present', 'absent', 'late', 'excused']">
+              <button
+                @click="detailStatusFilter = status"
+                class="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition whitespace-nowrap"
+                :class="detailStatusFilter === status
+                  ? 'bg-amber-600 text-slate-950 border-amber-500 font-bold shadow-md'
+                  : 'bg-slate-900 text-slate-400 border-transparent hover:bg-slate-800'"
+                x-text="status === 'all' ? '全部' : getStatusLabel(status)"
+              ></button>
+            </template>
+          </div>
+        </div>
+
+        <!-- 賓客名冊清單滾動區 -->
+        <div class="flex-grow overflow-y-auto p-4 space-y-2">
+          <template x-if="selectedHistoryRecord">
+            <div class="space-y-2">
+              <template x-for="item in getFilteredDetailStudents()">
+                <div class="bg-slate-900/50 border border-slate-850 px-4 py-2.5 rounded-xl flex items-center justify-between">
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <span class="text-xs font-mono bg-slate-850 text-slate-400 px-1.5 py-0.5 rounded shrink-0" x-text="item.number"></span>
+                    <span class="text-sm font-semibold text-white truncate" x-text="item.name"></span>
+                  </div>
+                  <span class="text-xs px-2.5 py-1 rounded-full font-bold shrink-0" :class="getStatusBadgeClass(item.status)" x-text="getStatusLabel(item.status)"></span>
+                </div>
+              </template>
+              
+              <template x-if="getFilteredDetailStudents().length === 0">
+                <div class="py-12 text-center text-xs text-slate-500">
+                  沒有符合查詢條件的成員。
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-900/40 flex justify-between gap-3">
+          <button
+            @click="exportToCSV(selectedHistoryRecord)"
+            class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1.5"
+          >
+            導出本次 CSV 報表
+          </button>
+          <button
+            @click="selectedHistoryRecord = null"
+            class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-4 py-2.5 rounded-xl transition"
+          >
+            關閉視窗
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 mt-12">
+      <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-500 space-y-2">
+        <p>© 2026 聚餐智慧點名助理 — 讓每一場聚會報到與抽獎更輕鬆流暢</p>
+        <p class="text-slate-600">
+          💡 本地儲存已開啟。聚餐名冊與歷史資料將妥善地儲存於此電腦的瀏覽器中。
+        </p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- --- 系統核心邏輯 JavaScript --- -->
+  <script>
+    // 預設示範資料 (中英文姓名大亂鬥，完美符合聚會情境)
+    const DEFAULT_CLASSES = [
+      {
+        id: 'party-1',
+        name: '🍾 2026 年度部門春酒聚餐',
+        students: [
+          { id: 'm-1', name: '陳冠宇 (Jerry)', number: '01' },
+          { id: 'm-2', name: 'Emily Watson', number: '02' },
+          { id: 'm-3', name: '張家豪 (Leo)', number: '03' },
+          { id: 'm-4', name: 'Sarah Chen', number: '04' },
+          { id: 'm-5', name: '黃詩涵 (Amanda)', number: '05' },
+          { id: 'm-6', name: 'David Ko', number: '06' },
+          { id: 'm-7', name: '劉子軒 (Sam)', number: '07' },
+          { id: 'm-8', name: 'Grace Wu', number: '08' },
+        ]
+      },
+      {
+        id: 'party-2',
+        name: '🏕️ 週末好友露營烤肉趴',
+        students: [
+          { id: 'f-1', name: '王小明 (Alex)', number: '01' },
+          { id: 'f-2', name: 'Jessica Lin', number: '02' },
+          { id: 'f-3', name: '林志美 (Bella)', number: '03' },
+          { id: 'f-4', name: 'Kenji Sato', number: '04' },
+        ]
+      }
+    ];
+
+    function dinnerApp() {
+      return {
+        classes: [],
+        history: [],
+        activeTab: 'rollcall',
+        selectedClassId: '',
+        attendance: {},
+        
+        newClassName: '',
+        newStudentName: '',
+        newStudentNumber: '',
+        bulkInput: '',
+
+        historySearchTerm: '',
+        historyStudentSearch: '',
+        selectedHistoryRecord: null,
+        detailSearchTerm: '',
+        detailStatusFilter: 'all',
+
+        toast: null,
+        confirmModal: {
+          show: false,
+          title: '',
+          message: '',
+          onConfirm: null
+        },
+
+        init() {
+          const savedClasses = localStorage.getItem('rollcall_classes');
+          this.classes = savedClasses ? JSON.parse(savedClasses) : DEFAULT_CLASSES;
+
+          const savedHistory = localStorage.getItem('rollcall_history');
+          this.history = savedHistory ? JSON.parse(savedHistory) : [];
+
+          if (this.classes.length > 0) {
+            this.selectedClassId = this.classes[0].id;
+            this.resetAttendance();
+          }
+
+          // 深度狀態監聽與儲存
+          this.$watch('classes', value => {
+            localStorage.setItem('rollcall_classes', JSON.stringify(value));
+          });
+          this.$watch('history', value => {
+            localStorage.setItem('rollcall_history', JSON.stringify(value));
+          });
+          this.$watch('selectedClassId', value => {
+            this.resetAttendance();
+          });
+        },
+
+        get currentClass() {
+          return this.classes.find(c => c.id === this.selectedClassId);
+        },
+
+        resetAttendance() {
+          const current = this.currentClass;
+          if (!current) return;
+          const initial = {};
+          current.students.forEach(s => {
+            initial[s.id] = 'present'; // 聚餐預設全部已到，最省時間
+          });
+          this.attendance = initial;
+        },
+
+        handleStatusChange(studentId, status) {
+          this.attendance[studentId] = status;
+        },
+
+        setAllStatus(status) {
+          const current = this.currentClass;
+          if (!current) return;
+          current.students.forEach(s => {
+            this.attendance[s.id] = status;
+          });
+          this.showToast(`已將全員狀態設為：${this.getStatusLabel(status)}`, 'info');
+        },
+
+        getStats() {
+          const current = this.currentClass;
+          if (!current) return { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+          const stats = { present: 0, absent: 0, late: 0, excused: 0 };
+          current.students.forEach(s => {
+            const status = this.attendance[s.id] || 'present';
+            stats[status]++;
+          });
+          return { ...stats, total: current.students.length };
+        },
+
+        // --- 活動名冊新增與維護 ---
+        handleCreateClass() {
+          if (!this.newClassName.trim()) return;
+          const newClass = {
+            id: `event-${Date.now()}`,
+            name: this.newClassName.trim(),
+            students: []
+          };
+          this.classes.push(newClass);
+          this.selectedClassId = newClass.id;
+          this.newClassName = '';
+          this.showToast('建立聚餐活動成功！');
+        },
+
+        confirmDeleteClass(classId) {
+          if (this.classes.length <= 1) {
+            this.showToast('請至少保留一個活動名冊！', 'error');
+            return;
+          }
+          this.confirmModal = {
+            show: true,
+            title: '確定刪除此活動？',
+            message: '這將永久移除此聚餐及其底下的全部成員名冊，此操作無法還原。',
+            onConfirm: () => {
+              this.classes = this.classes.filter(c => c.id !== classId);
+              this.selectedClassId = this.classes[0].id;
+              this.showToast('聚餐活動已成功刪除');
+            }
+          };
+        },
+
+        handleAddStudent() {
+          if (!this.newStudentName.trim() || !this.selectedClassId) return;
+          const current = this.currentClass;
+          if (!current) return;
+
+          const nextNum = (current.students.length + 1).toString().padStart(2, '0');
+          current.students.push({
+            id: `student-${Date.now()}`,
+            name: this.newStudentName.trim(), // 支援中文、英文輸入
+            number: this.newStudentNumber.trim() || nextNum
+          });
+
+          this.newStudentName = '';
+          this.newStudentNumber = '';
+          this.resetAttendance();
+          this.showToast('成功加入賓客名單！');
+        },
+
+        // --- LINE 接龍名單智慧匯入演算法 ---
+        handleBulkImport() {
+          if (!this.bulkInput.trim() || !this.selectedClassId) return;
+          
+          // 分解貼上的每一行名單
+          const lines = this.bulkInput.split('\n');
+          const finalNames = [];
+
+          lines.forEach(line => {
+            let name = line.trim();
+            if (!name) return;
+
+            // 1. 智慧消除行首數字、句號或點 (如 "1. Jerry" 或 "2、王小明")
+            name = name.replace(/^\d+[\.\:\,、\s\-]+/g, '');
+
+            // 2. 智慧消除常用的接龍廢字 (如 "王大同 +1" -> "王大同", "Emily 已繳費" -> "Emily")
+            name = name.replace(/[\+\+1\s]+1/g, '') // 消除 "+1" 或 " + 1"
+                       .replace(/[\(（]已.*[\)）]/g, '') // 消除 "(已繳費)", "(已繳)"
+                       .replace(/已繳[費錢]?/g, '') // 消除 "已繳費"
+                       .replace(/[\+\s]/g, ''); // 清理其餘多餘的 + 號與空格
+
+            name = name.trim();
+            if (name.length > 0) {
+              finalNames.push(name);
+            }
+          });
+
+          if (finalNames.length === 0) {
+            this.showToast('未偵測到有效姓名！', 'error');
+            return;
+          }
+
+          const current = this.currentClass;
+          if (current) {
+            let currentLen = current.students.length;
+            const newStudents = finalNames.map((name, index) => ({
+              id: `student-${Date.now()}-${index}`,
+              name,
+              number: (currentLen + index + 1).toString().padStart(2, '0')
+            }));
+            current.students.push(...newStudents);
+          }
+
+          this.bulkInput = '';
+          this.resetAttendance();
+          this.showToast(`成功批次智慧匯入 ${finalNames.length} 位成員！`);
+        },
+
+        handleDeleteStudent(studentId) {
+          const current = this.currentClass;
+          if (current) {
+            current.students = current.students.filter(s => s.id !== studentId);
+            this.resetAttendance();
+            this.showToast('已移除該成員');
+          }
+        },
+
+        // --- 點名結果儲存與跨頁查詢 ---
+        handleSaveAttendance() {
+          const current = this.currentClass;
+          if (!current || current.students.length === 0) {
+            this.showToast('此活動沒有成員，無法儲存結果！', 'error');
+            return;
+          }
+
+          const counts = { present: 0, absent: 0, late: 0, excused: 0 };
+          const details = [];
+
+          current.students.forEach(s => {
+            const status = this.attendance[s.id] || 'present';
+            counts[status]++;
+            details.push({
+              studentId: s.id,
+              name: s.name,
+              number: s.number,
+              status
+            });
+          });
+
+          const total = current.students.length;
+          const rate = Math.round((counts.present / total) * 100);
+
+          const record = {
+            id: `history-${Date.now()}`,
+            className: current.name,
+            classId: current.id,
+            date: new Date().toLocaleString('zh-TW', { hour12: false }),
+            total,
+            counts,
+            rate,
+            details
+          };
+
+          this.history.unshift(record);
+          this.showToast('聚會登記儲存成功！可隨時在「聚餐歷史」中查詢。');
+        },
+
+        // 歷史過濾 (支援跨歷史追蹤中、英文名字成員)
+        getFilteredHistory() {
+          return this.history.filter(record => {
+            const matchesGeneral = record.className.toLowerCase().includes(this.historySearchTerm.toLowerCase()) ||
+                                   record.date.toLowerCase().includes(this.historySearchTerm.toLowerCase());
+            
+            const matchesStudent = this.historyStudentSearch.trim() === '' ? true : record.details.some(d => 
+              d.name.toLowerCase().includes(this.historyStudentSearch.toLowerCase())
+            );
+
+            return matchesGeneral && matchesStudent;
+          });
+        },
+
+        getFilteredDetailStudents() {
+          if (!this.selectedHistoryRecord) return [];
+          return this.selectedHistoryRecord.details.filter(item => {
+            const matchesSearch = item.name.toLowerCase().includes(this.detailSearchTerm.toLowerCase()) || 
+                                  item.number.includes(this.detailSearchTerm);
+            const matchesStatus = this.detailStatusFilter === 'all' ? true : item.status === this.detailStatusFilter;
+            return matchesSearch && matchesStatus;
+          });
+        },
+
+        openHistoryDetails(record) {
+          this.selectedHistoryRecord = record;
+          this.detailSearchTerm = '';
+          this.detailStatusFilter = 'all';
+        },
+
+        confirmDeleteHistory(id) {
+          this.confirmModal = {
+            show: true,
+            title: '確定刪除此筆聚餐紀錄？',
+            message: '這將會永久移除該次聚餐活動的出席統計歷史。',
+            onConfirm: () => {
+              this.history = this.history.filter(item => item.id !== id);
+              this.showToast('聚會紀錄已清除');
+            }
+          };
+        },
+
+        confirmClearAllHistory() {
+          this.confirmModal = {
+            show: true,
+            title: '⚠️ 確定清除所有聚會歷史？',
+            message: '此動作將會抹除該瀏覽器中所有留存的聚餐點名與出席歷史統計，且無法還原。確定要執行嗎？',
+            onConfirm: () => {
+              this.history = [];
+              this.showToast('已清空所有歷史檔案', 'info');
+            }
+          };
+        },
+
+        // --- 匯出 CSV (完美避開 Excel 亂碼) ---
+        exportToCSV(record) {
+          let csvContent = "\uFEFF"; // UTF-8 BOM, 關鍵：保證 Windows Excel 打開中文時絕不亂碼
+          csvContent += `聚會活動,${record.className}\n`;
+          csvContent += `記錄時間,${record.date}\n`;
+          csvContent += `賓客到齊率,${record.rate}%\n\n`;
+          csvContent += "編號,姓名,報到狀態\n";
+
+          record.details.forEach(item => {
+            csvContent += `"${item.number}","${item.name}","${this.getStatusLabel(item.status)}"\n`;
+          });
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `${record.className}_出席名冊_${record.date.split(' ')[0]}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          this.showToast('CSV 報表匯出成功！');
+        },
+
+        triggerConfirmAction() {
+          if (this.confirmModal.onConfirm) {
+            this.confirmModal.onConfirm();
+          }
+          this.confirmModal.show = false;
+        },
+
+        showToast(message, type = 'success') {
+          this.toast = { message, type };
+          setTimeout(() => {
+            this.toast = null;
+          }, 3000);
+        },
+
+        getStatusLabel(status) {
+          switch (status) {
+            case 'present': return '已到';
+            case 'absent': return '未到';
+            case 'late': return '遲到';
+            case 'excused': return '請假';
+            default: return '未標記';
+          }
+        },
+
+        getStatusBadgeClass(status) {
+          switch (status) {
+            case 'present': return 'bg-emerald-950/80 text-emerald-400 border border-emerald-800';
+            case 'absent': return 'bg-rose-950/80 text-rose-400 border border-rose-800';
+            case 'late': return 'bg-amber-950/80 text-amber-400 border border-amber-800';
+            case 'excused': return 'bg-sky-950/80 text-sky-400 border border-sky-800';
+            default: return 'bg-slate-800 text-slate-400';
+          }
+        }
+      };
+    }
+  </script>
+
+</body>
+</html>
