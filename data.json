@@ -3,7 +3,218 @@
     {
       "id": "event-1779695028375",
       "name": "2026/05/25 RF聚餐(千葉火鍋)",
-      "students": []
+      "students": [
+        {
+          "id": "student-1779696202848-0",
+          "name": "陳文彬Sam",
+          "number": "01"
+        },
+        {
+          "id": "student-1779696202848-1",
+          "name": "黃紹綸Lucas",
+          "number": "02"
+        },
+        {
+          "id": "student-1779696202848-2",
+          "name": "林子揚Justin",
+          "number": "03"
+        },
+        {
+          "id": "student-1779696202848-3",
+          "name": "吳岱霖Lance",
+          "number": "04"
+        },
+        {
+          "id": "student-1779696202848-4",
+          "name": "孫明正Brian",
+          "number": "05"
+        },
+        {
+          "id": "student-1779696202848-5",
+          "name": "翁興樺Eddie",
+          "number": "06"
+        },
+        {
+          "id": "student-1779696202848-6",
+          "name": "古文賢Sean",
+          "number": "07"
+        },
+        {
+          "id": "student-1779696202848-7",
+          "name": "李沈亮Serway",
+          "number": "08"
+        },
+        {
+          "id": "student-1779696202848-8",
+          "name": "陳信豪Eason",
+          "number": "09"
+        },
+        {
+          "id": "student-1779696202848-9",
+          "name": "許嘉益Owen",
+          "number": "10"
+        },
+        {
+          "id": "student-1779696202848-10",
+          "name": "黃光明Gino",
+          "number": "11"
+        },
+        {
+          "id": "student-1779696202848-11",
+          "name": "宋旻軒Stim",
+          "number": "12"
+        },
+        {
+          "id": "student-1779696202848-12",
+          "name": "張哲睿Nyle",
+          "number": "13"
+        },
+        {
+          "id": "student-1779696202848-13",
+          "name": "羅偉榤Jay",
+          "number": "14"
+        },
+        {
+          "id": "student-1779696202848-14",
+          "name": "陳文鴻Mason",
+          "number": "15"
+        },
+        {
+          "id": "student-1779696202848-15",
+          "name": "張力鑑Caster",
+          "number": "16"
+        },
+        {
+          "id": "student-1779696202848-16",
+          "name": "黃俊傑RJ",
+          "number": "17"
+        },
+        {
+          "id": "student-1779696202848-17",
+          "name": "張凱傑KJ",
+          "number": "18"
+        },
+        {
+          "id": "student-1779696202848-18",
+          "name": "黃楷恩Kevin",
+          "number": "19"
+        },
+        {
+          "id": "student-1779696202848-19",
+          "name": "葉春顯Ken",
+          "number": "20"
+        },
+        {
+          "id": "student-1779696202848-20",
+          "name": "鄭名峰Ken",
+          "number": "21"
+        },
+        {
+          "id": "student-1779696202848-21",
+          "name": "楊証皓Young",
+          "number": "22"
+        },
+        {
+          "id": "student-1779696202848-22",
+          "name": "李智峰Chris",
+          "number": "23"
+        },
+        {
+          "id": "student-1779696202848-23",
+          "name": "洪育樂Gordon",
+          "number": "24"
+        },
+        {
+          "id": "student-1779696202848-24",
+          "name": "黃泳彰Ederson",
+          "number": "25"
+        },
+        {
+          "id": "student-1779696202848-25",
+          "name": "盧奕先Black",
+          "number": "26"
+        },
+        {
+          "id": "student-1779696202848-26",
+          "name": "胡有彥Paul",
+          "number": "27"
+        },
+        {
+          "id": "student-1779696202848-27",
+          "name": "白家維Richard",
+          "number": "28"
+        },
+        {
+          "id": "student-1779696202848-28",
+          "name": "郭昀Alex",
+          "number": "29"
+        },
+        {
+          "id": "student-1779696202848-29",
+          "name": "范澤嘉George",
+          "number": "30"
+        },
+        {
+          "id": "student-1779696202848-30",
+          "name": "蔡牧倉Edmund",
+          "number": "31"
+        },
+        {
+          "id": "student-1779696202848-31",
+          "name": "黃思維Viola",
+          "number": "32"
+        },
+        {
+          "id": "student-1779696202848-32",
+          "name": "李佳佑Lex",
+          "number": "33"
+        },
+        {
+          "id": "student-1779696202848-33",
+          "name": "黃聖堯Jimmy",
+          "number": "34"
+        },
+        {
+          "id": "student-1779696202848-34",
+          "name": "胡哲瑜Ian",
+          "number": "35"
+        },
+        {
+          "id": "student-1779696202848-35",
+          "name": "劉俊佑Johnson",
+          "number": "36"
+        },
+        {
+          "id": "student-1779696202848-36",
+          "name": "吳岱洧",
+          "number": "37"
+        },
+        {
+          "id": "student-1779696202848-37",
+          "name": "黃馨霈",
+          "number": "38"
+        },
+        {
+          "id": "student-1779696202848-38",
+          "name": "葉曜賢",
+          "number": "39"
+        },
+        {
+          "id": "student-1779696202848-39",
+          "name": "李翊菱",
+          "number": "40"
+        },
+        {
+          "id": "student-1779696202848-40",
+          "name": "許嘉紜",
+          "number": "41"
+        },
+        {
+          "id": "student-1779696202848-41",
+          "name": "陳渝欣",
+          "number": "42"
+        }
+      ]
     }
   ],
   "history": [
