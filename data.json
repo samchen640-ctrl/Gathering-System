@@ -1,52 +1,6 @@
 {
   "classes": [
     {
-      "id": "party-1",
-      "name": "ð¾ 2026 å¹´åº¦é¨éæ¥éèé¤",
-      "students": [
-        {
-          "id": "m-1",
-          "name": "é³å å® (Jerry)",
-          "number": "01"
-        },
-        {
-          "id": "m-2",
-          "name": "Emily Watson",
-          "number": "02"
-        },
-        {
-          "id": "m-3",
-          "name": "å¼µå®¶è±ª (Leo)",
-          "number": "03"
-        },
-        {
-          "id": "m-4",
-          "name": "Sarah Chen",
-          "number": "04"
-        },
-        {
-          "id": "m-5",
-          "name": "é»è©©æ¶µ (Amanda)",
-          "number": "05"
-        },
-        {
-          "id": "m-6",
-          "name": "David Ko",
-          "number": "06"
-        },
-        {
-          "id": "m-7",
-          "name": "åå­è» (Sam)",
-          "number": "07"
-        },
-        {
-          "id": "m-8",
-          "name": "Grace Wu",
-          "number": "08"
-        }
-      ]
-    },
-    {
       "id": "party-2",
       "name": "ðï¸ é±æ«å¥½åé²çç¤èè¶´",
       "students": [
