@@ -1544,7 +1544,8 @@
             }
             const data = await res.json();
             this.githubSha = data.sha;
-            const content = JSON.parse(atob(data.content));
+            const decoded = decodeURIComponent(escape(atob(data.content)));
+            const content = JSON.parse(decoded);
             if (content.classes && Array.isArray(content.classes) && content.classes.length > 0) {
               this.classes = content.classes;
             }
