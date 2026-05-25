@@ -199,6 +199,248 @@
   ],
   "history": [
     {
+      "id": "history-1779705509101",
+      "className": "2026/05/25 RF聚餐(千葉火鍋)",
+      "classId": "event-1779695028375",
+      "date": "2026/5/25 18:38:29",
+      "total": 38,
+      "counts": {
+        "present": 32,
+        "absent": 6
+      },
+      "rate": 84,
+      "details": [
+        {
+          "studentId": "student-1779696295040-0",
+          "name": "陳文彬_Sam",
+          "number": "01",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-1",
+          "name": "黃紹綸_Lucas",
+          "number": "02",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-2",
+          "name": "林子揚_Justin",
+          "number": "03",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-3",
+          "name": "吳岱霖_Lance",
+          "number": "04",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696295040-4",
+          "name": "孫明正_Brian",
+          "number": "05",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-5",
+          "name": "翁興樺_Eddie",
+          "number": "06",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-6",
+          "name": "古文賢_Sean",
+          "number": "07",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696295040-7",
+          "name": "李沈亮_Serway",
+          "number": "08",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-8",
+          "name": "陳信豪_Eason",
+          "number": "09",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-9",
+          "name": "許嘉益_Owen",
+          "number": "10",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-10",
+          "name": "黃光明_Gino",
+          "number": "11",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-11",
+          "name": "宋旻軒_Stim",
+          "number": "12",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-12",
+          "name": "張哲睿_Nyle",
+          "number": "13",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-13",
+          "name": "羅偉榤_Jay",
+          "number": "14",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-14",
+          "name": "陳文鴻_Mason",
+          "number": "15",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-15",
+          "name": "張力鑑_Caster",
+          "number": "16",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696295040-16",
+          "name": "黃俊傑_RJ",
+          "number": "17",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-17",
+          "name": "張凱傑_KJ",
+          "number": "18",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-18",
+          "name": "黃楷恩_Kevin",
+          "number": "19",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-19",
+          "name": "葉春顯_Ken",
+          "number": "20",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-20",
+          "name": "鄭名峰_Ken",
+          "number": "21",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-21",
+          "name": "楊証皓_Young",
+          "number": "22",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-22",
+          "name": "李智峰_Chris",
+          "number": "23",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-23",
+          "name": "洪育樂_Gordon",
+          "number": "24",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-24",
+          "name": "黃泳彰_Ederson",
+          "number": "25",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696295040-25",
+          "name": "盧奕先_Black",
+          "number": "26",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696295040-26",
+          "name": "胡有彥_Paul",
+          "number": "27",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-27",
+          "name": "白家維_Richard",
+          "number": "28",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-28",
+          "name": "郭昀_Alex",
+          "number": "29",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-29",
+          "name": "范澤嘉_George",
+          "number": "30",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-30",
+          "name": "蔡牧倉_Edmund",
+          "number": "31",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-31",
+          "name": "黃思維_Viola",
+          "number": "32",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-32",
+          "name": "李佳佑_Lex",
+          "number": "33",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-33",
+          "name": "黃聖堯_Jimmy",
+          "number": "34",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-34",
+          "name": "胡哲瑜_Ian",
+          "number": "35",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696295040-35",
+          "name": "劉俊佑_Johnson",
+          "number": "36",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779696442784",
+          "name": "吳岱洧_Jeff",
+          "number": "37",
+          "status": "absent"
+        },
+        {
+          "studentId": "student-1779696453553",
+          "name": "黃馨霈_Vicky",
+          "number": "38",
+          "status": "present"
+        }
+      ]
+    },
+    {
       "id": "history-1779696338446",
       "className": "2026/05/25 RF聚餐(千葉火鍋)",
       "classId": "event-1779695028375",
