@@ -1,32 +1,6 @@
 {
   "classes": [
     {
-      "id": "party-2",
-      "name": "ðï¸ é±æ«å¥½åé²çç¤èè¶´",
-      "students": [
-        {
-          "id": "f-1",
-          "name": "çå°æ (Alex)",
-          "number": "01"
-        },
-        {
-          "id": "f-2",
-          "name": "Jessica Lin",
-          "number": "02"
-        },
-        {
-          "id": "f-3",
-          "name": "æå¿ç¾ (Bella)",
-          "number": "03"
-        },
-        {
-          "id": "f-4",
-          "name": "Kenji Sato",
-          "number": "04"
-        }
-      ]
-    },
-    {
       "id": "event-1779693190052",
       "name": "2026年 5月25日 RF千葉火鍋聚餐",
       "students": []
