@@ -4,8 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>聚餐與活動智慧點名系統</title>
+  <!-- Tailwind CSS  CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- Alpine.js 核心庫 -->
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- SheetJS 核心庫 (用於在瀏覽器端流暢解析 Excel 檔案) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     [x-cloak] { display: none !important; }
     /* 精美滾動條 */
@@ -57,6 +61,7 @@
       <span class="font-medium text-sm" x-text="toast ? toast.message : ''"></span>
     </div>
 
+    <!-- 自訂確認視窗 -->
     <div 
       x-show="confirmModal.show" 
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
@@ -83,7 +88,7 @@
           </button>
           <button 
             @click="triggerConfirmAction()" 
-            class="bg-amber-600 hover:bg-amber-500 text-slate-900 text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-950/20"
+            class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl transition shadow-lg shadow-amber-950/20"
           >
             確定執行
           </button>
@@ -97,7 +102,6 @@
         <!-- Logo -->
         <div class="flex items-center gap-3">
           <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-2.5 rounded-2xl shadow-lg shadow-amber-500/10 flex items-center justify-center">
-            <!-- 聚餐乾杯 SVG -->
             <svg class="w-6 h-6 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m0 0a3 3 0 100-6 3 3 0 000 6z" />
             </svg>
@@ -106,7 +110,7 @@
             <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-amber-200 bg-clip-text text-transparent">
               聚餐與活動智慧點名系統
             </h1>
-            <p class="text-xs text-slate-400">專為派對、春酒、同學會設計的報到與互動神器</p>
+            <p class="text-xs text-slate-400">專為派對、春酒、同學會設計的智慧報到助理</p>
           </div>
         </div>
 
@@ -251,7 +255,7 @@
               </div>
               <div>
                 <h4 class="text-slate-300 font-medium">名單空空如也！</h4>
-                <p class="text-xs text-slate-500 mt-1">請切換至「名單維護」分頁新增成員或批次匯入中英文名字。</p>
+                <p class="text-xs text-slate-500 mt-1">請切換至「名單維護」分頁快速新增或直接匯入 Excel 人員清單。</p>
               </div>
               <button
                 @click="activeTab = 'classes'"
@@ -272,7 +276,6 @@
                   <div class="flex items-center gap-4 w-full sm:w-auto">
                     <span class="text-xs font-mono bg-slate-800 text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg" x-text="student.number"></span>
                     <div>
-                      <!-- 支援繁中、英文姓名正常渲染 -->
                       <span class="font-semibold text-white text-base tracking-wide" x-text="student.name"></span>
                     </div>
                   </div>
@@ -402,72 +405,95 @@
               <div class="border-b border-slate-800 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <div>
                   <h2 class="text-lg font-bold text-white" x-text="`${currentClass.name} — 名單管理`"></h2>
-                  <p class="text-xs text-slate-400">支援快速登入或批次導入中、英文名字</p>
+                  <p class="text-xs text-slate-400">支援手動新增、LINE接龍、或是 Excel 一鍵檔案匯入，系統將全自動編號</p>
                 </div>
                 <span class="bg-slate-800 text-slate-300 text-xs px-3 py-1 rounded-full font-mono" x-text="`共 ${currentClass.students.length} 人`"></span>
               </div>
 
-              <!-- 新增成員表單 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <!-- 新增成員表單 (3 欄佈局) -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 
-                <!-- 手動單筆登入 -->
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
-                  <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                    </svg>
-                    方法一：手動新增成員
-                  </h4>
-                  <form @submit.prevent="handleAddStudent()" class="space-y-3">
-                    <div class="grid grid-cols-3 gap-2">
-                      <div class="col-span-1">
+                <!-- 方法一：手動新增成員 (自動編號) -->
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      </svg>
+                      方法一：手動新增 (自動編號)
+                    </h4>
+                    <form @submit.prevent="handleAddStudent()" class="space-y-3">
+                      <div>
                         <input
                           type="text"
-                          placeholder="編號"
-                          x-model="newStudentNumber"
-                          class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
-                        />
-                      </div>
-                      <div class="col-span-2">
-                        <input
-                          type="text"
-                          placeholder="王大明 / Jerry Wang"
+                          placeholder="輸入姓名 (例如: 王大同)"
                           x-model="newStudentName"
                           class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                           required
                         />
                       </div>
-                    </div>
-                    <button
-                      type="submit"
-                      class="w-full bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-semibold py-2 rounded-lg transition"
-                    >
-                      加入此活動
-                    </button>
-                  </form>
+                      <button
+                        type="submit"
+                        class="w-full bg-slate-850 hover:bg-slate-800 text-amber-400 text-xs font-semibold py-2 rounded-lg transition border border-slate-800 hover:border-amber-500/20"
+                      >
+                        加入此活動
+                      </button>
+                    </form>
+                  </div>
                 </div>
 
-                <!-- LINE 接龍一鍵批次智慧匯入 -->
-                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl">
-                  <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    方法二：LINE接龍名單直接貼上 (智能過濾雜訊)
-                  </h4>
-                  <div class="space-y-2">
-                    <textarea
-                      rows="2"
-                      placeholder="例：1. Jerry Wang, 2. 陳小明 +1, 3. Alex (已交錢)"
-                      x-model="bulkInput"
-                      class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500 resize-none font-sans"
-                    ></textarea>
-                    <button
-                      @click="handleBulkImport()"
-                      class="w-full bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 text-xs font-semibold py-1.5 rounded-lg transition"
-                    >
-                      智能批次匯入名冊
-                    </button>
+                <!-- 方法二：LINE 接龍貼上 -->
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      方法二：LINE接龍名單
+                    </h4>
+                    <div class="space-y-2">
+                      <textarea
+                        rows="2"
+                        placeholder="複製群組接龍貼上：&#10;1. Jerry&#10;2. 王小明 +1"
+                        x-model="bulkInput"
+                        class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-amber-500 resize-none font-sans"
+                      ></textarea>
+                      <button
+                        @click="handleBulkImport()"
+                        class="w-full bg-amber-600/10 hover:bg-amber-600/20 text-amber-300 text-xs font-semibold py-1.5 rounded-lg transition border border-amber-500/10"
+                      >
+                        智能批次解析
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 方法三：Excel 智慧檔案匯入 -->
+                <div class="bg-slate-900/40 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+                      <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      方法三：匯入 Excel 檔案
+                    </h4>
+                    <div class="space-y-2">
+                      <label class="flex flex-col items-center justify-center w-full h-24 border border-dashed border-slate-800 hover:border-amber-500/50 rounded-xl cursor-pointer bg-slate-900/30 hover:bg-slate-900/50 transition">
+                        <div class="flex flex-col items-center justify-center pt-3 pb-3 text-center">
+                          <svg class="w-6 h-6 text-emerald-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <span class="text-[10px] text-slate-400 font-semibold block">點擊選取或拖曳上傳</span>
+                          <span class="text-[8px] text-slate-500 mt-0.5 block">支援 .xlsx, .xlsm, .xls</span>
+                        </div>
+                        <input 
+                          type="file" 
+                          class="hidden" 
+                          accept=".xlsx, .xlsm, .xls"
+                          @change="handleExcelImport($event)"
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -486,12 +512,14 @@
                     <template x-for="student in currentClass.students" :key="student.id">
                       <div class="bg-slate-900/60 border border-slate-800 px-3 py-2.5 rounded-xl flex items-center justify-between transition">
                         <div class="flex items-center gap-2 overflow-hidden">
+                          <!-- 永遠維持完美排序的動態序號 -->
                           <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded shrink-0" x-text="student.number"></span>
                           <span class="text-sm font-semibold text-slate-200 truncate" x-text="student.name"></span>
                         </div>
                         <button
                           @click="handleDeleteStudent(student.id)"
                           class="text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-slate-800 shrink-0 transition"
+                          title="移除成員"
                         >
                           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -793,7 +821,7 @@
     <!-- 頁尾 -->
     <footer class="border-t border-slate-800 bg-slate-950 py-6 mt-12">
       <div class="max-w-6xl mx-auto px-4 text-center text-xs text-slate-500 space-y-2">
-        <p>© 2026 聚餐智慧點名助理 — 讓每一場聚會報到與抽獎更輕鬆流暢</p>
+        <p>© 2026 聚餐智慧點名助理 — 讓每一場聚會報到更輕鬆流暢</p>
         <p class="text-slate-600">
           💡 本地儲存已開啟。聚餐名冊與歷史資料將妥善地儲存於此電腦的瀏覽器中。
         </p>
@@ -804,7 +832,7 @@
 
   <!-- --- 系統核心邏輯 JavaScript --- -->
   <script>
-    // 預設示範資料 (中英文姓名大亂鬥，完美符合聚會情境)
+    // 預設示範資料 (中英文姓名大亂鬥)
     const DEFAULT_CLASSES = [
       {
         id: 'party-1',
@@ -887,12 +915,23 @@
           return this.classes.find(c => c.id === this.selectedClassId);
         },
 
+        // --- 重算編號核心演算法 ( Resequencing ) ---
+        resequenceStudents() {
+          const current = this.currentClass;
+          if (!current) return;
+          current.students.forEach((s, i) => {
+            s.number = (i + 1).toString().padStart(2, '0');
+          });
+          // 強制 Alpine 深度更新，觸發本地儲存
+          this.classes = [...this.classes];
+        },
+
         resetAttendance() {
           const current = this.currentClass;
           if (!current) return;
           const initial = {};
           current.students.forEach(s => {
-            initial[s.id] = 'present'; // 聚餐預設全部已到，最省時間
+            initial[s.id] = 'present'; // 聚餐預設全部已到
           });
           this.attendance = initial;
         },
@@ -952,29 +991,28 @@
           };
         },
 
+        // 方法一：手動新增 (自動智慧編號)
         handleAddStudent() {
           if (!this.newStudentName.trim() || !this.selectedClassId) return;
           const current = this.currentClass;
           if (!current) return;
 
-          const nextNum = (current.students.length + 1).toString().padStart(2, '0');
           current.students.push({
             id: `student-${Date.now()}`,
-            name: this.newStudentName.trim(), // 支援中文、英文輸入
-            number: this.newStudentNumber.trim() || nextNum
+            name: this.newStudentName.trim(),
+            number: '' // 由重算演算法自動計算
           });
 
+          this.resequenceStudents();
           this.newStudentName = '';
-          this.newStudentNumber = '';
           this.resetAttendance();
           this.showToast('成功加入賓客名單！');
         },
 
-        // --- LINE 接龍名單智慧匯入演算法 ---
+        // 方法二：LINE 接龍貼上 (自動智慧編號)
         handleBulkImport() {
           if (!this.bulkInput.trim() || !this.selectedClassId) return;
           
-          // 分解貼上的每一行名單
           const lines = this.bulkInput.split('\n');
           const finalNames = [];
 
@@ -982,14 +1020,14 @@
             let name = line.trim();
             if (!name) return;
 
-            // 1. 智慧消除行首數字、句號或點 (如 "1. Jerry" 或 "2、王小明")
+            // 智慧消除行首數字、點或標點 (如 "1. Jerry" 或 "2、王小明")
             name = name.replace(/^\d+[\.\:\,、\s\-]+/g, '');
 
-            // 2. 智慧消除常用的接龍廢字 (如 "王大同 +1" -> "王大同", "Emily 已繳費" -> "Emily")
-            name = name.replace(/[\+\+1\s]+1/g, '') // 消除 "+1" 或 " + 1"
-                       .replace(/[\(（]已.*[\)）]/g, '') // 消除 "(已繳費)", "(已繳)"
-                       .replace(/已繳[費錢]?/g, '') // 消除 "已繳費"
-                       .replace(/[\+\s]/g, ''); // 清理其餘多餘的 + 號與空格
+            // 智慧消除常用的接龍廢字 (如 "王大同 +1", "Emily 已繳費")
+            name = name.replace(/[\+\+1\s]+1/g, '')
+                       .replace(/[\(（]已.*[\)）]/g, '')
+                       .replace(/已繳[費錢]?/g, '')
+                       .replace(/[\+\s]/g, '');
 
             name = name.trim();
             if (name.length > 0) {
@@ -1004,24 +1042,137 @@
 
           const current = this.currentClass;
           if (current) {
-            let currentLen = current.students.length;
             const newStudents = finalNames.map((name, index) => ({
               id: `student-${Date.now()}-${index}`,
               name,
-              number: (currentLen + index + 1).toString().padStart(2, '0')
+              number: ''
             }));
             current.students.push(...newStudents);
+            this.resequenceStudents();
+            this.bulkInput = '';
+            this.resetAttendance();
+            this.showToast(`成功批次智慧匯入 ${finalNames.length} 位成員！`);
           }
+        },
 
-          this.bulkInput = '';
-          this.resetAttendance();
-          this.showToast(`成功批次智慧匯入 ${finalNames.length} 位成員！`);
+        // 方法三：Excel 檔案智慧解析與匯入 (自動智慧編號)
+        handleExcelImport(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              
+              if (workbook.SheetNames.length === 0) {
+                this.showToast('Excel 檔案中沒有找到工作表！', 'error');
+                return;
+              }
+
+              const firstSheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[firstSheetName];
+              const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+              if (rows.length === 0) {
+                this.showToast('選取的工作表為空！', 'error');
+                return;
+              }
+
+              let nameColIndex = 0;
+              let headerRowIndex = -1;
+
+              // 1. 智慧搜尋：查找是否有包含「姓名、Name、成員」等特徵的標題列
+              for (let r = 0; r < Math.min(rows.length, 5); r++) {
+                const row = rows[r];
+                if (!row) continue;
+                for (let c = 0; c < row.length; c++) {
+                  const val = String(row[c] || '').trim().toLowerCase();
+                  if (['姓名', 'name', '成員', '賓客', '中文姓名', '英文姓名', '姓名/名稱', '中英文姓名', 'guest', '聯絡人', '姓名(中/英)', '姓名(中英文)'].some(h => val.includes(h))) {
+                    nameColIndex = c;
+                    headerRowIndex = r;
+                    break;
+                  }
+                }
+                if (headerRowIndex !== -1) break;
+              }
+
+              // 2. 智慧備份方案：若沒有標題列，自動評估最適當的文字欄（避開全是數字或編號的流水號欄）
+              if (headerRowIndex === -1) {
+                const colScores = [];
+                const numCols = rows.reduce((max, r) => Math.max(max, r ? r.length : 0), 0);
+                for (let c = 0; c < numCols; c++) {
+                  let textCount = 0;
+                  let numCount = 0;
+                  let emptyCount = 0;
+                  for (let r = 0; r < Math.min(rows.length, 10); r++) {
+                    const val = String(rows[r]?.[c] || '').trim();
+                    if (!val) {
+                      emptyCount++;
+                    } else if (/^\d+$/.test(val)) {
+                      numCount++;
+                    } else {
+                      textCount++;
+                    }
+                  }
+                  const score = textCount - numCount * 2 - emptyCount;
+                  colScores.push({ index: c, score });
+                }
+                if (colScores.length > 0) {
+                  colScores.sort((a, b) => b.score - a.score);
+                  nameColIndex = colScores[0].index;
+                }
+              }
+
+              // 3. 提取名單 (排除雜訊與標題列字眼)
+              const finalNames = [];
+              const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+              for (let r = startRow; r < rows.length; r++) {
+                const row = rows[r];
+                if (!row) continue;
+                const val = String(row[nameColIndex] || '').trim();
+                if (val && !['姓名', 'name', '成員', '賓客', '中文姓名', '英文姓名', '聯絡人', 'id', '編號', 'no', 'number'].includes(val.toLowerCase())) {
+                  finalNames.push(val);
+                }
+              }
+
+              if (finalNames.length === 0) {
+                this.showToast('Excel 中未偵測到任何有效的姓名資訊！', 'error');
+                return;
+              }
+
+              // 4. 新增至現有成員，並觸發動態重新編號與 UI 刷新
+              const current = this.currentClass;
+              if (current) {
+                const newStudents = finalNames.map((name, index) => ({
+                  id: `student-${Date.now()}-${index}`,
+                  name,
+                  number: ''
+                }));
+                current.students.push(...newStudents);
+                this.resequenceStudents(); // 智慧重新洗牌編號
+                this.resetAttendance();
+                this.showToast(`成功從 Excel 匯入 ${finalNames.length} 位賓客名單！`);
+              } else {
+                this.showToast('請先選取或建立一個聚會活動！', 'error');
+              }
+
+            } catch (err) {
+              console.error(err);
+              this.showToast('解析 Excel 檔案出錯，請確認檔案結構。', 'error');
+            }
+            // 清空 Input，避免上傳相同檔案不觸發 Change
+            event.target.value = '';
+          };
+          reader.readAsArrayBuffer(file);
         },
 
         handleDeleteStudent(studentId) {
           const current = this.currentClass;
           if (current) {
             current.students = current.students.filter(s => s.id !== studentId);
+            this.resequenceStudents(); // 智慧重新計算所有成員編號，保證排序整齊無漏號
             this.resetAttendance();
             this.showToast('已移除該成員');
           }
@@ -1067,7 +1218,6 @@
           this.showToast('聚會登記儲存成功！可隨時在「聚餐歷史」中查詢。');
         },
 
-        // 歷史過濾 (支援跨歷史追蹤中、英文名字成員)
         getFilteredHistory() {
           return this.history.filter(record => {
             const matchesGeneral = record.className.toLowerCase().includes(this.historySearchTerm.toLowerCase()) ||
@@ -1121,7 +1271,6 @@
           };
         },
 
-        // --- 匯出 CSV (完美避開 Excel 亂碼) ---
         exportToCSV(record) {
           let csvContent = "\uFEFF"; // UTF-8 BOM, 關鍵：保證 Windows Excel 打開中文時絕不亂碼
           csvContent += `聚會活動,${record.className}\n`;
