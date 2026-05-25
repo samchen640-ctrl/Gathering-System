@@ -199,6 +199,250 @@
   ],
   "history": [
     {
+      "id": "history-1779693617416",
+      "className": "2026/05/25 RF聚餐",
+      "classId": "event-1779693535547",
+      "date": "2026/5/25 15:20:17",
+      "total": 38,
+      "counts": {
+        "present": 38,
+        "absent": 0,
+        "late": 0,
+        "excused": 0
+      },
+      "rate": 100,
+      "details": [
+        {
+          "studentId": "student-1779693542415-0",
+          "name": "陳文彬",
+          "number": "01",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-1",
+          "name": "黃紹綸",
+          "number": "02",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-2",
+          "name": "林子揚",
+          "number": "03",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-3",
+          "name": "吳岱霖",
+          "number": "04",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-4",
+          "name": "孫明正",
+          "number": "05",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-5",
+          "name": "翁興樺",
+          "number": "06",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-6",
+          "name": "古文賢",
+          "number": "07",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-7",
+          "name": "李沈亮",
+          "number": "08",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-8",
+          "name": "陳信豪",
+          "number": "09",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-9",
+          "name": "許嘉益",
+          "number": "10",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-10",
+          "name": "黃光明",
+          "number": "11",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-11",
+          "name": "宋旻軒",
+          "number": "12",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-12",
+          "name": "張哲睿",
+          "number": "13",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-13",
+          "name": "羅偉榤",
+          "number": "14",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-14",
+          "name": "陳文鴻",
+          "number": "15",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-15",
+          "name": "張力鑑",
+          "number": "16",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-16",
+          "name": "黃俊傑",
+          "number": "17",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-17",
+          "name": "張凱傑",
+          "number": "18",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-18",
+          "name": "黃楷恩",
+          "number": "19",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-19",
+          "name": "葉春顯",
+          "number": "20",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-20",
+          "name": "鄭名峰",
+          "number": "21",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-21",
+          "name": "楊証皓",
+          "number": "22",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-22",
+          "name": "李智峰",
+          "number": "23",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-23",
+          "name": "洪育樂",
+          "number": "24",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-24",
+          "name": "黃泳彰",
+          "number": "25",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-25",
+          "name": "盧奕先",
+          "number": "26",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-26",
+          "name": "胡有彥",
+          "number": "27",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-27",
+          "name": "白家維",
+          "number": "28",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-28",
+          "name": "郭昀",
+          "number": "29",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-29",
+          "name": "范澤嘉",
+          "number": "30",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-30",
+          "name": "蔡牧倉",
+          "number": "31",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-31",
+          "name": "黃思維",
+          "number": "32",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-32",
+          "name": "李佳佑",
+          "number": "33",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-33",
+          "name": "黃聖堯",
+          "number": "34",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-34",
+          "name": "胡哲瑜",
+          "number": "35",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-35",
+          "name": "劉俊佑",
+          "number": "36",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-36",
+          "name": "吳岱洧",
+          "number": "37",
+          "status": "present"
+        },
+        {
+          "studentId": "student-1779693542415-37",
+          "name": "黃馨霈",
+          "number": "38",
+          "status": "present"
+        }
+      ]
+    },
+    {
       "id": "history-1779693497920",
       "className": "2026å¹´ 5æ25æ¥ RFåèç«éèé¤",
       "classId": "event-1779693190052",
